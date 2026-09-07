@@ -30,6 +30,11 @@ jobs:
         run: |
           base64 -d run_fasn.py.gz.b64 | gzip -dc > run_fasn_gse230809.py
           python -m py_compile run_fasn_gse230809.py
+      - name: Print analysis source for follow-up
+        run: |
+          echo '===== SOURCE BEGIN ====='
+          sed -n '1,240p' run_fasn_gse230809.py
+          echo '===== SOURCE END ====='
       - name: Run unbiased GSE230809 network analysis
         run: |
           set -o pipefail
