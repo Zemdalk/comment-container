@@ -1,0 +1,46 @@
+name: FASN GSE230809 scTenifoldNet
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      OMP_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      NUMEXPR_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install scientific stack
+        run: |
+          python -m pip install --upgrade pip
+          pip install "scanpy==1.11.4" harmonypy leidenalg igraph "scTenifoldpy==0.4.0"
+      - name: Decode compute script
+        run: |
+          base64 -d run_fasn.py.gz.b64 | gzip -dc > run_fasn_gse230809.py
+          python -m py_compile run_fasn_gse230809.py
+      - name: Run unbiased GSE230809 network analysis
+        run: |
+          python run_fasn_gse230809.py 2>&1 | tee run.log
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fasn-gse230809-results
+          path: |
+            results/
+            run.log
+          if-no-files-found: warn
+          retention-days: 7
