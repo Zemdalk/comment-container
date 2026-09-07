@@ -32,6 +32,7 @@ jobs:
           python -m py_compile run_fasn_gse230809.py
       - name: Run unbiased GSE230809 network analysis
         run: |
+          set -o pipefail
           python run_fasn_gse230809.py 2>&1 | tee run.log
       - name: Upload results
         if: always()
